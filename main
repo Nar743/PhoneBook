@@ -1,0 +1,98 @@
+class User:
+    def __init__(self, name):
+        self.name = name
+        self.friends = []
+        self.phone_books = {}
+
+    def add_friend(self, friend):
+        self.friends.append(friend)
+
+    def remove_friend(self, friend):
+        if friend in self.friends:
+            self.friends.remove(friend)
+        else:
+            print("Этот пользователь не является вашим другом.")
+
+    def add_contact(self, contact, tag):
+        if tag not in self.phone_books:
+            self.phone_books[tag] = PhoneBook(tag)
+        self.phone_books[tag].add_contact(contact)
+
+    def share_phone_book(self, friend, tag):
+        if friend not in self.friends:
+            print("Этот пользователь не является вашим другом.")
+            return
+        if tag not in self.phone_books:
+            print("Указанная телефонная книжка не существует.")
+            return
+        friend.phone_books[tag] = self.phone_books[tag]
+
+class PhoneBook:
+    def __init__(self, tag):
+        self.tag = tag
+        self.contacts = []
+
+    def add_contact(self, contact):
+        self.contacts.append(contact)
+
+    def remove_contact(self, contact):
+        if contact in self.contacts:
+            self.contacts.remove(contact)
+
+    def filter_by_country_code(self, country_code):
+        filtered_contacts = []
+        for contact in self.contacts:
+            if contact.country_code == country_code:
+                filtered_contacts.append(contact)
+        return filtered_contacts
+
+    def filter_by_user(self, user):
+        filtered_contacts = []
+        for contact in self.contacts:
+            if contact.user == user:
+                filtered_contacts.append(contact)
+        return filtered_contacts
+
+class Contact:
+    def __init__(self, user, country_code, phone_number):
+        self.user = user
+        self.country_code = country_code
+        self.phone_number = phone_number
+
+class Admin(User):
+    def add_contact_to_phone_book(self, contact, phone_book):
+        phone_book.add_contact(contact)
+
+    def remove_contact_from_phone_book(self, contact, phone_book):
+        phone_book.remove_contact(contact)
+
+# Пример использования классов для проверки работоспособности
+
+# Создаем пользователей
+user1 = User("Пользователь 1")
+user2 = User("Пользователь 2")
+
+print(user1.name)
+
+# Добавляем пользователей в список друзей
+user1.add_friend(user2)
+
+# Создаем контакты
+contact1 = Contact(user1, "+1", "123456789")
+contact2 = Contact(user2, "+1", "987654321")
+
+# Создаем телефонные книжки и добавляем контакты
+user1.add_contact(contact1, "family")
+user2.add_contact(contact2, "work")
+
+# Делаем обмен телефонными книжками
+user1.share_phone_book(user2, "family")
+
+# Проверяем, что контакты добавлены в соответствующие телефонные книжки
+print(user1.phone_books["family"].contacts)  # [Contact(user1, "+1", "123456789")]
+print(user2.phone_books["family"].contacts)  # [Contact(user1, "+1", "123456789")]
+
+# Проверяем фильтрацию контактов по коду страны
+filtered_contacts = user2.phone_books["family"].filter_by_country_code("+1")
+for contact in filtered_contacts:
+    print(contact.phone_number)  # 123456789
